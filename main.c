@@ -3,16 +3,21 @@
 int main()
 {
     LinearSystemStateType a;
-    double Data[ 3 ][ 4 ] = 
+    double P[ 4 ][ 5 ] = 
     { 
-        { 1, 2, 3, 5 },
-        { 2, 2, 5, 1 },
-        { 7, 4, 3, 9 },
-};
-    LinearSystemStateFunction_Init( &a, Data, 3 );
-    LinearSystemOutputFunction_Print( &a );
-    LinearSystemStateFunction_Triangular( &a );
-    LinearSystemOutputFunction_Print( &a );
+        {1,3,1,-1,-1},
+        {3,9,4,1,-1},
+        {2,1,5,2,0},
+        {0,1,-1,-1,-2}
+    };
+
+    LinearSystemStateFunction_Init( &a, P, 4 );
+
+    LinearSystemStateFunction_GaussJordanSolve( &a );
+
+    LinearSystemOutputFunction_PrintMatrix( &a );
+    LinearSystemOutputFunction_PrintConst( &a );
+
     return 0;
 }
 
