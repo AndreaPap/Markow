@@ -20,7 +20,7 @@ int main()
     LinearSystemOutputFunction_PrintMatrix( &a );
     LinearSystemOutputFunction_PrintConst( &a );
 
-    // Metti scambio righe invece di ricorsione!!
+    // Prova a separare memoria da mappa
 
     return 0;
 }
