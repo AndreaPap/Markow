@@ -13,10 +13,14 @@ int main()
 
     LinearSystemStateFunction_Init( &a, P, 4 );
 
-    LinearSystemStateFunction_GaussJordanSolve( &a );
+    LinearSystemStateFunction_RowExchange( &a, 0, 3 );
+
+    LinearSystemStateFunction_Solve( &a );
 
     LinearSystemOutputFunction_PrintMatrix( &a );
     LinearSystemOutputFunction_PrintConst( &a );
+
+    // Metti scambio righe invece di ricorsione!!
 
     return 0;
 }

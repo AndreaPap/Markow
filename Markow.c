@@ -50,39 +50,57 @@ void LinearSystemStateFunction_SumRow( LinearSystemStateType* State, unsigned in
 
 void LinearSystemStateFunction_IsolateInColumn( LinearSystemStateType* State, unsigned int Row, unsigned int Column )
 {
-    // la funzione mira a preservare solo un elemento in una data colonna
-    // non avviene se l'elemento da annullare è già nullo o se quello da preservare è nullo
     for( unsigned int Cur = 0; Cur < State->Order; Cur ++ )
     {
-        if( Cur != Row && STATE[ Cur ][ Column ] != 0.0 && STATE[ Row ][ Column ] != 0.0 )
+        if( Cur != Row && STATE[ Cur ][ Column ] != 0.0 )
         {
+            if( STATE[ Row ][ Column ] != 0.0 )
+            {
+
+            }
             LinearSystemStateFunction_ScaleRow( State, Cur, - STATE[ Row ][ Column ] / STATE[ Cur ][ Column ] );
             LinearSystemStateFunction_SumRow( State, Cur, Row );
         }
     }
 }
 
-void LinearSystemStateFunction_GaussJordanSolve( LinearSystemStateType* State )
+void LinearSystemStateFunction_RowExchange( LinearSystemStateType* State, unsigned int Row1, unsigned int Row2 )
+{
+    double Row1Data[ State->Order + 1 ];
+    double Row2Data[ State->Order + 1 ];
+
+    for( unsigned int Cur = 0; Cur < State->Order + 1; Cur ++ )
+    {
+        Row1Data[ Cur ] = STATE[ Row1 ][ Cur ];
+        Row2Data[ Cur ] = STATE[ Row2 ][ Cur ];
+    }
+    for( unsigned int Cur = 0; Cur < State->Order + 1; Cur ++ )
+    {
+        STATE[ Row1 ][ Cur ] = Row2Data[ Cur ];
+        STATE[ Row2 ][ Cur ] = Row1Data[ Cur ];
+    }
+}
+
+void LinearSystemStateFunction_Solve( LinearSystemStateType* State )
 {
     for( unsigned int Cur = 0; Cur < State->Order; Cur ++ )
     {
+        if( STATE[ Cur ][ Cur ] == 0.0f )
+        {
+            for( unsigned int CurSearch = 0; CurSearch < State->Order; CurSearch ++ )
+            {
+                if( STATE[ CurSearch ][ Cur ] != 0.0f )
+                {
+                    LinearSystemStateFunction_RowExchange( State, Cur, CurSearch );
+                    break;  // rompe il blocco iterativo più vicino
+                }
+            }
+        }
         LinearSystemStateFunction_IsolateInColumn( State, Cur, Cur );
     }
     for( unsigned int Cur = 0; Cur < State->Order; Cur ++ )
     {
         LinearSystemStateFunction_ScaleRow( State, Cur, 1.0 / STATE[ Cur ][ Cur ] );
-    }
-    for( unsigned int CurRow = 0; CurRow < State->Order; CurRow ++ )
-    {
-        for( unsigned int CurCol = 0; CurCol < State->Order; CurCol ++ )
-        {
-            if( CurRow != CurCol && STATE[ CurCol ][ CurRow ] != 0.0 )
-            {
-               LinearSystemStateFunction_GaussJordanSolve( State ); 
-               // il programma considera che l'isolamento potrebbe fallire quindi richiama in maniera ricursiva il solver se serve
-               return; 
-            }
-        }
     }
 }
 
