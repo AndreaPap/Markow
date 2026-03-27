@@ -2,25 +2,24 @@
 
 int main()
 {
-    LinearSystemStateType a;
-    double P[ 4 ][ 5 ] = 
+    Type_LinearSystemState a;
+    double P[ 3 ][ 4 ] = 
     { 
-        {1,3,1,-1,-1},
-        {3,9,4,1,-1},
-        {2,1,5,2,0},
-        {0,1,-1,-1,-2}
+        { 0.3 -1.0, 0.5,       0.1,       0.0 },
+        { 0.4,      0.2 - 1.0, 0.1,       0.0 },
+    //  { 0.3,      0.3,       0.8 -1.0,  0.0 },
+        { 1.0,      1.0,       1.0,       -1.0 }
     };
 
-    LinearSystemStateFunction_Init( &a, P, 4 );
-
-    LinearSystemStateFunction_RowExchange( &a, 0, 3 );
-
+    LinearSystemStateFunction_Init( &a, P, 3 );
+    
     LinearSystemStateFunction_Solve( &a );
 
     LinearSystemOutputFunction_PrintMatrix( &a );
     LinearSystemOutputFunction_PrintConst( &a );
 
-    // Prova a separare memoria da mappa
+    LinearSystemStateFunction_DeInit( &a );
+
 
     return 0;
 }

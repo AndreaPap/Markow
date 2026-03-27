@@ -2,94 +2,95 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define STATE ( ( double ( * )[ State->Order + 1 ] )( State->SystemPointer ) )
+// inline sostituzione diretta e static visibile solo dentro questo .c
+static inline double Get( Type_LinearSystemState* State, unsigned int Row, unsigned int Column ) 
+{
+    return State->SystemData[ Row * ( State->Order + 1 ) + Column ];
+}
 
-void LinearSystemStateFunction_Init( LinearSystemStateType* State, void* SystemPointer, unsigned int Order )
+static inline double Set( Type_LinearSystemState* State, unsigned int Row, unsigned int Column, double Data ) 
+{
+    State->SystemData[ Row * ( State->Order + 1 ) + Column ] = Data;
+}
+
+void LinearSystemStateFunction_Init( Type_LinearSystemState* State, void* SystemPointer, unsigned int Order )
 {
     State->Order = Order;
-    State->SystemPointer = SystemPointer;
-}
+    State->SystemData = malloc( Order * ( Order + 1 ) * sizeof( double ) );
 
-void LinearSystemStateFunction_Triangular( LinearSystemStateType* State )
-{
-    for( unsigned int Cur = 0; Cur < State->Order; Cur ++ )
+    for( unsigned int CurRow = 0; CurRow < Order; CurRow ++ )
     {
-        LinearSystemStateFunction_GaussStep( State, Cur );
-    }
-}
-
-void LinearSystemStateFunction_GaussStep( LinearSystemStateType* State, unsigned int Row )
-{
-    double Pivot = STATE[ Row ][ Row ];
-    
-    for( unsigned int CurRow = Row + 1; CurRow < State->Order; CurRow ++ )
-    {
-        for( unsigned int CurCol = 0; CurCol < State->Order + 1; CurCol ++ ) // le colonne sono una in più dell'ordine per il termine noto
+        for( unsigned int CurCol = 0; CurCol < Order + 1; CurCol ++ )
         {
-            STATE[ CurRow ][ CurCol ] +=
-            STATE[ Row ][ CurCol ] * ( -STATE[ CurRow ][ Row ] / Pivot );
+            Set( State, CurRow, CurCol,
+                ( ( double ( * )[ State->Order + 1 ] )( SystemPointer ) )[ CurRow ][ CurCol ] );
         }
     }
 }
 
-void LinearSystemStateFunction_ScaleRow( LinearSystemStateType* State, unsigned int Row, double Scale )
+void LinearSystemStateFunction_DeInit( Type_LinearSystemState* State )
+{
+    State->Order = 0;
+    free( State->SystemData );
+}
+
+void LinearSystemStateFunction_ScaleRow( Type_LinearSystemState* State, unsigned int Row, double Scale )
 {
     for( unsigned int CurCol = 0; CurCol < State->Order + 1; CurCol ++ )
     {
-       STATE[ Row ][ CurCol ] *= Scale;
+       Set( State, Row, CurCol, Get( State, Row, CurCol ) * Scale );
     }
 }
 
-void LinearSystemStateFunction_SumRow( LinearSystemStateType* State, unsigned int Row1, unsigned int Row2 )
+void LinearSystemStateFunction_SumRow( Type_LinearSystemState* State, unsigned int Row1, unsigned int Row2 )
 {
     for( unsigned int Cur = 0; Cur < State->Order + 1; Cur ++ )
     {
-        STATE[ Row1 ][ Cur ] += STATE[ Row2 ][ Cur ];
+        Set( State, Row1, Cur,
+            Get( State, Row1, Cur ) + Get( State, Row2, Cur ) );
     }
 }
 
-void LinearSystemStateFunction_IsolateInColumn( LinearSystemStateType* State, unsigned int Row, unsigned int Column )
+void LinearSystemStateFunction_IsolateInColumn( Type_LinearSystemState* State, unsigned int Row, unsigned int Column )
 {
+    double Reference = Get( State, Row, Column );
+
     for( unsigned int Cur = 0; Cur < State->Order; Cur ++ )
     {
-        if( Cur != Row && STATE[ Cur ][ Column ] != 0.0 )
-        {
-            if( STATE[ Row ][ Column ] != 0.0 )
-            {
+        double ToNull = Get( State, Cur, Column );
 
-            }
-            LinearSystemStateFunction_ScaleRow( State, Cur, - STATE[ Row ][ Column ] / STATE[ Cur ][ Column ] );
+        if( Cur != Row && ToNull != 0.0 )
+        {
+            LinearSystemStateFunction_ScaleRow( State, Cur, - Reference / ToNull );
             LinearSystemStateFunction_SumRow( State, Cur, Row );
         }
     }
 }
 
-void LinearSystemStateFunction_RowExchange( LinearSystemStateType* State, unsigned int Row1, unsigned int Row2 )
+void LinearSystemStateFunction_RowExchange( Type_LinearSystemState* State, unsigned int Row1, unsigned int Row2 )
 {
-    double Row1Data[ State->Order + 1 ];
-    double Row2Data[ State->Order + 1 ];
+    double Tmp1;
+    double Tmp2;
 
     for( unsigned int Cur = 0; Cur < State->Order + 1; Cur ++ )
     {
-        Row1Data[ Cur ] = STATE[ Row1 ][ Cur ];
-        Row2Data[ Cur ] = STATE[ Row2 ][ Cur ];
-    }
-    for( unsigned int Cur = 0; Cur < State->Order + 1; Cur ++ )
-    {
-        STATE[ Row1 ][ Cur ] = Row2Data[ Cur ];
-        STATE[ Row2 ][ Cur ] = Row1Data[ Cur ];
+        Tmp1 = Get( State, Row1, Cur );
+        Tmp2 = Get( State, Row2, Cur );
+
+        Set( State, Row1, Cur, Tmp2 );
+        Set( State, Row2, Cur, Tmp1 );
     }
 }
 
-void LinearSystemStateFunction_Solve( LinearSystemStateType* State )
+void LinearSystemStateFunction_Solve( Type_LinearSystemState* State )
 {
     for( unsigned int Cur = 0; Cur < State->Order; Cur ++ )
     {
-        if( STATE[ Cur ][ Cur ] == 0.0f )
+        if( Get( State, Cur, Cur ) == 0.0f )
         {
             for( unsigned int CurSearch = 0; CurSearch < State->Order; CurSearch ++ )
             {
-                if( STATE[ CurSearch ][ Cur ] != 0.0f )
+                if( Get( State, CurSearch, Cur ) != 0.0f )
                 {
                     LinearSystemStateFunction_RowExchange( State, Cur, CurSearch );
                     break;  // rompe il blocco iterativo più vicino
@@ -100,44 +101,45 @@ void LinearSystemStateFunction_Solve( LinearSystemStateType* State )
     }
     for( unsigned int Cur = 0; Cur < State->Order; Cur ++ )
     {
-        LinearSystemStateFunction_ScaleRow( State, Cur, 1.0 / STATE[ Cur ][ Cur ] );
+        LinearSystemStateFunction_ScaleRow( State, Cur, 1.0 / Get( State, Cur, Cur ) );
     }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void LinearSystemOutputFunction_PrintMatrix( LinearSystemStateType* State )
+void LinearSystemOutputFunction_PrintMatrix( Type_LinearSystemState* State )
 {
     for( unsigned int CurRow = 0; CurRow < State->Order; CurRow ++ )
     {
         for( unsigned int CurCol = 0; CurCol < State->Order + 1; CurCol ++ )
         {
-            printf( "%+.3f\t",STATE[ CurRow ][ CurCol ] );
+            printf( "%+.3f\t", Get( State, CurRow, CurCol ) );
         }
     printf( "\n" );
     }
     printf( "\n" );
 }
 
-void LinearSystemOutputFunction_PrintCoeff( LinearSystemStateType* State )
+void LinearSystemOutputFunction_PrintCoeff( Type_LinearSystemState* State )
 {
     for( unsigned int CurRow = 0; CurRow < State->Order; CurRow ++ )
     {
         for( unsigned int CurCol = 0; CurCol < State->Order; CurCol ++ )
         {
-            printf( "%+.3f\t",STATE[ CurRow ][ CurCol ] );
+            printf( "%+.3f\t", Get( State, CurRow, CurCol ) );
         }
     printf( "\n" );
     }
     printf( "\n" );
 }
 
-void LinearSystemOutputFunction_PrintConst( LinearSystemStateType* State )
+void LinearSystemOutputFunction_PrintConst( Type_LinearSystemState* State )
 {
     
     for( unsigned int CurRow = 0; CurRow < State->Order; CurRow ++ )
     {
-        printf( "%+.3f\t",-STATE[ CurRow ][ State->Order ] );
+        printf( "%+.3f\t", - Get( State, CurRow, State->Order ) );
         printf( "\n" );
     }
     printf( "\n" );
 }
+    
