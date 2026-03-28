@@ -88,7 +88,7 @@ void LinearSystemStateFunction_Solve( Type_LinearSystemState* State )
     {
         if( Get( State, Cur, Cur ) == 0.0f )
         {
-            for( unsigned int CurSearch = 0; CurSearch < State->Order; CurSearch ++ )
+            for( unsigned int CurSearch = Cur + 1; CurSearch < State->Order; CurSearch ++ )
             {
                 if( Get( State, CurSearch, Cur ) != 0.0f )
                 {
