@@ -13,7 +13,7 @@ static inline double Set( Type_LinearSystemState* State, unsigned int Row, unsig
     State->SystemData[ Row * ( State->Order + 1 ) + Column ] = Data;
 }
 
-void LinearSystemStateFunction_Init( Type_LinearSystemState* State, void* SystemPointer, unsigned int Order )
+void LinearSystemInit( Type_LinearSystemState* State, void* SystemPointer, unsigned int Order )
 {
     State->Order = Order;
     State->SystemData = malloc( Order * ( Order + 1 ) * sizeof( double ) );
@@ -28,13 +28,13 @@ void LinearSystemStateFunction_Init( Type_LinearSystemState* State, void* System
     }
 }
 
-void LinearSystemStateFunction_DeInit( Type_LinearSystemState* State )
+void LinearSystemDeInit( Type_LinearSystemState* State )
 {
     State->Order = 0;
     free( State->SystemData );
 }
 
-void LinearSystemStateFunction_ScaleRow( Type_LinearSystemState* State, unsigned int Row, double Scale )
+void LinearSystemScaleRow( Type_LinearSystemState* State, unsigned int Row, double Scale )
 {
     for( unsigned int CurCol = 0; CurCol < State->Order + 1; CurCol ++ )
     {
@@ -42,7 +42,7 @@ void LinearSystemStateFunction_ScaleRow( Type_LinearSystemState* State, unsigned
     }
 }
 
-void LinearSystemStateFunction_SumRow( Type_LinearSystemState* State, unsigned int Row1, unsigned int Row2 )
+void LinearSystemSumRow( Type_LinearSystemState* State, unsigned int Row1, unsigned int Row2 )
 {
     for( unsigned int Cur = 0; Cur < State->Order + 1; Cur ++ )
     {
@@ -51,7 +51,7 @@ void LinearSystemStateFunction_SumRow( Type_LinearSystemState* State, unsigned i
     }
 }
 
-void LinearSystemStateFunction_IsolateInColumn( Type_LinearSystemState* State, unsigned int Row, unsigned int Column )
+void LinearSystemIsolateInColumn( Type_LinearSystemState* State, unsigned int Row, unsigned int Column )
 {
     double Reference = Get( State, Row, Column );
 
@@ -61,13 +61,13 @@ void LinearSystemStateFunction_IsolateInColumn( Type_LinearSystemState* State, u
 
         if( Cur != Row && ToNull != 0.0 )
         {
-            LinearSystemStateFunction_ScaleRow( State, Cur, - Reference / ToNull );
-            LinearSystemStateFunction_SumRow( State, Cur, Row );
+            LinearSystemScaleRow( State, Cur, - Reference / ToNull );
+            LinearSystemSumRow( State, Cur, Row );
         }
     }
 }
 
-void LinearSystemStateFunction_RowExchange( Type_LinearSystemState* State, unsigned int Row1, unsigned int Row2 )
+void LinearSystemRowExchange( Type_LinearSystemState* State, unsigned int Row1, unsigned int Row2 )
 {
     double Tmp1;
     double Tmp2;
@@ -82,7 +82,7 @@ void LinearSystemStateFunction_RowExchange( Type_LinearSystemState* State, unsig
     }
 }
 
-void LinearSystemStateFunction_Solve( Type_LinearSystemState* State )
+void LinearSystemSolve( Type_LinearSystemState* State )
 {
     for( unsigned int Cur = 0; Cur < State->Order; Cur ++ )
     {
@@ -92,21 +92,21 @@ void LinearSystemStateFunction_Solve( Type_LinearSystemState* State )
             {
                 if( Get( State, CurSearch, Cur ) != 0.0f )
                 {
-                    LinearSystemStateFunction_RowExchange( State, Cur, CurSearch );
+                    LinearSystemRowExchange( State, Cur, CurSearch );
                     break;  // rompe il blocco iterativo più vicino
                 }
             }
         }
-        LinearSystemStateFunction_IsolateInColumn( State, Cur, Cur );
+        LinearSystemIsolateInColumn( State, Cur, Cur );
     }
     for( unsigned int Cur = 0; Cur < State->Order; Cur ++ )
     {
-        LinearSystemStateFunction_ScaleRow( State, Cur, 1.0 / Get( State, Cur, Cur ) );
+        LinearSystemScaleRow( State, Cur, 1.0 / Get( State, Cur, Cur ) );
     }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void LinearSystemOutputFunction_PrintMatrix( Type_LinearSystemState* State )
+void LinearSystemPrintMatrix( Type_LinearSystemState* State )
 {
     for( unsigned int CurRow = 0; CurRow < State->Order; CurRow ++ )
     {
@@ -119,7 +119,7 @@ void LinearSystemOutputFunction_PrintMatrix( Type_LinearSystemState* State )
     printf( "\n" );
 }
 
-void LinearSystemOutputFunction_PrintCoeff( Type_LinearSystemState* State )
+void LinearSystemPrintCoeff( Type_LinearSystemState* State )
 {
     for( unsigned int CurRow = 0; CurRow < State->Order; CurRow ++ )
     {
@@ -132,7 +132,7 @@ void LinearSystemOutputFunction_PrintCoeff( Type_LinearSystemState* State )
     printf( "\n" );
 }
 
-void LinearSystemOutputFunction_PrintConst( Type_LinearSystemState* State )
+void LinearSystemPrintConst( Type_LinearSystemState* State )
 {
     
     for( unsigned int CurRow = 0; CurRow < State->Order; CurRow ++ )

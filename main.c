@@ -25,14 +25,14 @@ int main()
         { 0,    1,          0,      1,          1,      0,          - 1  }
     };
 
-    LinearSystemStateFunction_Init( &a, P, 6 );
+    LinearSystemInit( &a, P, 6 );
     
-    LinearSystemStateFunction_Solve( &a );
+    LinearSystemSolve( &a );
 
-    LinearSystemOutputFunction_PrintMatrix( &a );
-    LinearSystemOutputFunction_PrintConst( &a );
+    LinearSystemPrintMatrix( &a );
+    LinearSystemPrintConst( &a );
 
-    LinearSystemStateFunction_DeInit( &a );
+    LinearSystemDeInit( &a );
 
 
     return 0;
