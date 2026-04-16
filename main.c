@@ -3,15 +3,23 @@
 int main()
 {
     Type_LinearSystemState a;
-    /*double P[ 3 ][ 4 ] = 
+    double P[ 3 * 4 ] = 
     { 
-        { 0.3 -1.0, 0.5,       0.1,       0.0 },
-        { 0.4,      0.2 - 1.0, 0.1,       0.0 },
-    //  { 0.3,      0.3,       0.8 -1.0,  0.0 },
-        { 1.0,      1.0,       1.0,       -1.0 }
-    };*/
+         ( 254.0 / 255.0 ) -1.0, 254.0 / 255.0, 0.020095470442420705, 0.0 ,
+         1 / 255.0, -1.0, 0.0, 0.0 ,
+        //{ 0.0, 1 / 255.0, 0.0, 0.0  },
+         1.0, 1.0, 1.0, -1.0 
+    };
 
-    double Pa = 0.3;
+    double P_[ 3 * 3 ] = 
+    { 
+         254.0 / 255.0 , 254.0 / 255.0, 0.020095470442420705,
+         1 / 255.0, 0.0, 0.0,
+         0.0, 1 / 255.0, 0.0
+    };
+
+
+    /*double Pa = 0.3;
     double Pb = 0.5;
     double Pc = 0.2;
 
@@ -23,10 +31,11 @@ int main()
         { 1,    0,          0,      1,          0,      1,          - 1  },
         { 0,    1,          1,      0,          0,      1,          - 1  },
         { 0,    1,          0,      1,          1,      0,          - 1  }
-    };
+    };*/
 
-    LinearSystemInit( &a, P, 6 );
-    
+    LinearSystemInit( &a, P, 3 );
+    LinearSystemPrintMatrix( &a );
+
     LinearSystemSolve( &a );
 
     LinearSystemPrintMatrix( &a );
@@ -34,7 +43,7 @@ int main()
 
     LinearSystemDeInit( &a );
 
-
+    MarkowChainStateProbability( P_, 3 );
     return 0;
 }
 

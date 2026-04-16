@@ -13,7 +13,7 @@ static inline double Set( Type_LinearSystemState* State, unsigned int Row, unsig
     State->SystemData[ Row * ( State->Order + 1 ) + Column ] = Data;
 }
 
-void LinearSystemInit( Type_LinearSystemState* State, void* SystemPointer, unsigned int Order )
+void LinearSystemInit( Type_LinearSystemState* State, double* SystemData, unsigned int Order )
 {
     State->Order = Order;
     State->SystemData = malloc( Order * ( Order + 1 ) * sizeof( double ) );
@@ -22,8 +22,7 @@ void LinearSystemInit( Type_LinearSystemState* State, void* SystemPointer, unsig
     {
         for( unsigned int CurCol = 0; CurCol < Order + 1; CurCol ++ )
         {
-            Set( State, CurRow, CurCol,
-                ( ( double ( * )[ State->Order + 1 ] )( SystemPointer ) )[ CurRow ][ CurCol ] );
+            Set( State, CurRow, CurCol, SystemData[ ( CurRow * ( Order + 1 ) ) + CurCol ] );
         }
     }
 }
@@ -142,4 +141,37 @@ void LinearSystemPrintConst( Type_LinearSystemState* State )
     }
     printf( "\n" );
 }
-    
+
+void MarkowChainStateProbability( double* TransitionProbability, unsigned int Order )
+{
+        double SystemData[ Order * ( Order + 1 ) ];
+
+        for( unsigned int CurRow = 0; CurRow < Order; CurRow ++ )
+        {
+            for( unsigned int CurCol = 0; CurCol < Order + 1; CurCol ++ )
+            {
+                double Data;
+
+                if( CurRow != Order - 1 )
+                {
+                    if( CurRow == CurCol ){ Data = TransitionProbability[ ( CurRow * Order ) + CurCol ] - 1.0; }
+                    else if( CurCol == Order ){ Data = 0.0f; }
+                    else{ Data = TransitionProbability[ ( CurRow * Order ) + CurCol ]; }
+                }
+                else
+                {
+                    Data = CurCol == Order ? - 1.0 : 1.0;
+                }
+
+                SystemData[ ( CurRow * ( Order + 1 ) ) + CurCol ] = Data; 
+            }
+        }
+
+        Type_LinearSystemState System;
+
+        LinearSystemInit( &System, SystemData, Order );
+        LinearSystemPrintMatrix( &System );
+        LinearSystemSolve( &System );
+        LinearSystemPrintMatrix( &System );
+        LinearSystemPrintConst( &System );
+}
