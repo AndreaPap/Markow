@@ -1,11 +1,11 @@
-#include "Markow.h"
+#include "MarkowChain.h"
 
 int main()
 {
     Type_LinearSystemState a;
     double P[ 3 * 4 ] = 
     { 
-         ( 254.0 / 255.0 ) -1.0, 254.0 / 255.0, 0.020095470442420705, 0.0 ,
+         ( 254.0 / 255.0 ) -1.0, 254.0 / 255.0, 0.01814994515059191, 0.0 ,
          1 / 255.0, -1.0, 0.0, 0.0 ,
         //{ 0.0, 1 / 255.0, 0.0, 0.0  },
          1.0, 1.0, 1.0, -1.0 
@@ -13,7 +13,7 @@ int main()
 
     double P_[ 3 * 3 ] = 
     { 
-         254.0 / 255.0 , 254.0 / 255.0, 0.020095470442420705,
+         254.0 / 255.0 , 254.0 / 255.0, 0.01814994515059191,
          1 / 255.0, 0.0, 0.0,
          0.0, 1 / 255.0, 0.0
     };
@@ -43,7 +43,7 @@ int main()
 
     LinearSystemDeInit( &a );
 
-    MarkowChainStateProbability( P_, 3 );
+    MarkowChainStateProbability( P_, 3, false );
     return 0;
 }
 

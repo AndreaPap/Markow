@@ -1,6 +1,4 @@
-#include "Markow.h"
-#include <stdlib.h>
-#include <stdio.h>
+#include "MarkowChain.h"
 
 // inline sostituzione diretta e static visibile solo dentro questo .c
 static inline double Get( Type_LinearSystemState* State, unsigned int Row, unsigned int Column ) 
@@ -111,7 +109,7 @@ void LinearSystemPrintMatrix( Type_LinearSystemState* State )
     {
         for( unsigned int CurCol = 0; CurCol < State->Order + 1; CurCol ++ )
         {
-            printf( "%+.3f\t", Get( State, CurRow, CurCol ) );
+            printf( PRINT_FORMAT "\t", Get( State, CurRow, CurCol ) );
         }
     printf( "\n" );
     }
@@ -124,7 +122,7 @@ void LinearSystemPrintCoeff( Type_LinearSystemState* State )
     {
         for( unsigned int CurCol = 0; CurCol < State->Order; CurCol ++ )
         {
-            printf( "%+.3f\t", Get( State, CurRow, CurCol ) );
+            printf( PRINT_FORMAT "\t", Get( State, CurRow, CurCol ) );
         }
     printf( "\n" );
     }
@@ -136,13 +134,13 @@ void LinearSystemPrintConst( Type_LinearSystemState* State )
     
     for( unsigned int CurRow = 0; CurRow < State->Order; CurRow ++ )
     {
-        printf( "%+.3f\t", - Get( State, CurRow, State->Order ) );
+        printf( PRINT_FORMAT "\t", - Get( State, CurRow, State->Order ) );
         printf( "\n" );
     }
     printf( "\n" );
 }
-
-void MarkowChainStateProbability( double* TransitionProbability, unsigned int Order )
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void MarkowChainStateProbability( double* TransitionProbability, unsigned int Order, bool Verbose )
 {
         double SystemData[ Order * ( Order + 1 ) ];
 
@@ -170,8 +168,8 @@ void MarkowChainStateProbability( double* TransitionProbability, unsigned int Or
         Type_LinearSystemState System;
 
         LinearSystemInit( &System, SystemData, Order );
-        LinearSystemPrintMatrix( &System );
+        if( Verbose ){ LinearSystemPrintMatrix( &System ); }
         LinearSystemSolve( &System );
-        LinearSystemPrintMatrix( &System );
+        if( Verbose ){ LinearSystemPrintMatrix( &System ); }
         LinearSystemPrintConst( &System );
 }

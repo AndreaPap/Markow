@@ -12,6 +12,14 @@ la produzione dell'output che può avvenire tramite ritorno di valori, side effe
 lo stato non viene ritornato ma modificato alla fine al fine di risparmiare copie e ram. Bisogna prestare attenzione 
 all'aggiornamento dello stato in quanto le modifiche devono essere computate su porzioni di stato non modificate.
 */
+#ifndef MARKOW_CHAIN_HEADER
+#define MARKOW_CHAIN_HEADER
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+
+#define PRINT_FORMAT "%+.6f"
 
 typedef struct
 {
@@ -31,5 +39,6 @@ void LinearSystemPrintMatrix     ( Type_LinearSystemState* State );
 void LinearSystemPrintCoeff      ( Type_LinearSystemState* State );
 void LinearSystemPrintConst      ( Type_LinearSystemState* State );
 
-void MarkowChainStateProbability ( double* TransitionProbability, unsigned int Order );
+void MarkowChainStateProbability ( double* TransitionProbability, unsigned int Order, bool Verbose );
 
+#endif
