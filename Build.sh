@@ -1,4 +1,4 @@
 clear
-gcc main.c MarkowChain.c -o main.bin
-./main.bin
+gcc Main.c MarkowChain.c -o Main.elf
+./Main.elf
 
